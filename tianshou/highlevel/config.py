@@ -1,6 +1,6 @@
 import logging
 import multiprocessing
-from dataclasses import dataclass
+from dataclasses import dataclass, fields
 
 from sensai.util.pickle import setstate
 from sensai.util.string import ToStringMixin
@@ -219,6 +219,11 @@ class OnlineTrainingConfig(TrainingConfig):
     """
 
     def __setstate__(self, state: dict) -> None:
+        if not isinstance(state, dict):
+            raise TypeError("state must be a dict")
+        allowed_state_keys = {field.name for field in fields(OnlineTrainingConfig)}
+        allowed_state_keys.update({"test_in_train"})
+        state = {key: value for key, value in state.items() if key in allowed_state_keys}
         setstate(
             OnlineTrainingConfig,
             self,
